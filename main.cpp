@@ -8,6 +8,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include <fstream>
 
 #include "person.h"
 #include "textcontrol.h"
@@ -18,6 +19,9 @@ typedef std::vector<cv::Rect> Faces;
 typedef std::vector<cv::Rect>::iterator  FacesItr;
 typedef std::vector<Person> People;
 typedef std::vector<Person>::iterator PeopleItr;
+
+cv::RNG ran;
+int ranNum;
 
 // Images
 cv::Mat frame;
@@ -30,6 +34,7 @@ cv::Mat erodeElem;
 cv::Mat dilateElem;
 cv::Mat extBackground;
 cv::Mat extFrame;
+cv::Mat combined;
 
 // Contours
 Contours contours;
@@ -43,7 +48,9 @@ cv::Ptr<cv::BackgroundSubtractor> sub;
 
 // My objects
 People ppl;
-//TextControl textControl;
+TextControl textControl;
+
+int frameCount;
 
 // Video
 cv::VideoCapture cap;
@@ -52,16 +59,27 @@ cv::VideoCapture cap;
 cv::Size monitorSz;
 cv::Size camSize;
 cv::Size textSize;
+cv::Size combinedSz;
 
 // Window
 char windowName[] = "main";
 bool testWnd = false;
 
+std::vector<std::string> waitingStrings;
+std::vector<std::string> foundStrings;
+std::vector<std::string> removingStrings;
+
 
 int main()
 {
+
+    frameCount = 0;
 	//load cascade
 	cascade.load("/home/odroid/Documents/disappear/data/cascade.xml");
+
+
+
+
 
 
 	// Background Sub
@@ -77,20 +95,88 @@ int main()
 	cap.open(0);
 
 	// get background
-	for(int i =0; i < 100; i ++)
+	for(int i =0; i < 50; i ++)
 	{
 		cap >> background;
 	}
     monitorSz = cv::Size(1920, 1080);
-	float a = background.size().width / monitorSz.height;
-	float b = background.size().height * a;
+    combinedSz = cv::Size(monitorSz.height, monitorSz.width);
+	float a = (float)monitorSz.height/(float)background.size().width;
+	float b = (float)background.size().height * a;
 	camSize = cv::Size(monitorSz.height, b);
-	textSize = cv::Size(monitorSz.height, monitorSz.width - camSize.width);
+	textSize = cv::Size(monitorSz.height, monitorSz.width - camSize.height);
+	combined = cv::Mat(combinedSz, background.type());
 
     bool cont = true;
+
+    // open files
+    std::ifstream file;
+    std::string line;
+    // waiting
+	file.open("/home/odroid/Documents/disappear/data/waiting.txt");
+    if(file)
+    {
+        while(std::getline(file, line))
+        {
+            std::cout << " Reading: " << line << std::endl;
+            waitingStrings.push_back(line);
+        }
+        file.close();
+	}
+	else
+	{
+        std::cout <<"error opening file" << std::endl;
+        return 1;
+	}
+
+	// found
+    file.open("/home/odroid/Documents/disappear/data/found.txt");
+    if(file)
+    {
+        while(std::getline(file, line))
+        {
+                    std::cout << " Reading: " << line << std::endl;
+
+            foundStrings.push_back(line);
+        }
+        file.close();
+	}
+	else
+	{
+        std::cout <<"error opening file" << std::endl;
+        return 1;
+	}
+
+    // removing
+    file.open("/home/odroid/Documents/disappear/data/removing.txt");
+    if(file)
+    {
+        while(std::getline(file, line))
+        {
+                    std::cout << " Reading: " << line << std::endl;
+
+            removingStrings.push_back(line);
+        }
+        file.close();
+	}
+	else
+	{
+        std::cout <<"error opening file" << std::endl;
+        return 1;
+	}
+
 	while(cont)
 	{
-		// get frsme
+        if(frameCount %6 == 0)
+        {
+
+            ran = cv::RNG(cv::getTickCount());
+            ranNum = ran.uniform(0, waitingStrings.size());
+            std::cout << ranNum << std::endl;
+            textControl.addItem(waitingStrings[ranNum], cv::Scalar(255, 255, 255));
+        }
+
+		// get frame
 		cap >> frame;
 
 		cv::cvtColor(frame, frameGrey, CV_RGB2GRAY);
@@ -115,6 +201,8 @@ int main()
 		// Find faces
 		cascade.detectMultiScale(frameGrey, faces, 1.1);
 
+
+
 		// reset pp
 		for(PeopleItr it = ppl.begin(); it != ppl.end(); it ++)
 		{
@@ -138,6 +226,21 @@ int main()
             if(!found)
             {
                 ppl.push_back(Person(*it));
+
+            ran = cv::RNG(cv::getTickCount());
+            ranNum = ran.uniform(0, foundStrings.size());
+            std::cout << ranNum << std::endl;
+            textControl.addItem(foundStrings[ranNum], cv::Scalar(0, 0, 255));
+
+
+            ran = cv::RNG(cv::getTickCount());
+            ranNum = ran.uniform(0, removingStrings.size());
+            std::cout << ranNum << std::endl;
+            textControl.addItem(removingStrings[ranNum], cv::Scalar(255, 128, 0));
+
+
+
+
             }
         }
 
@@ -189,19 +292,28 @@ int main()
             it->display(frame);
 		}
 
+		// text
+		textIm = cv::Mat::zeros(textSize, frame.type());
+		textControl.display(textIm);
+				cv::resize(frame, frame, camSize);
 
-		cv::imshow(windowName, frame);
+		std::cout << "Text: " << textIm.size() << " " << textIm.type() << std::endl;
+		std::cout << "Frame: " <<frame.size() << " " << frame.type() << std::endl;
+		std::cout << "Combined: " << combined.size() << " " << combined.type() << std::endl;
+				cv::vconcat(frame, textIm, combined);
+		cv::rotate(combined, combined, cv::ROTATE_90_CLOCKWISE);
+
+		cv::imshow(windowName, combined);
 		char key = cv::waitKey(10);
 		switch (key)
 		{
-		case 27://esc
-			cont = false;
-			break;
+            case 27://esc
+                cont = false;
+                break;
 		}
 
-
+		frameCount ++;
     }
-
 }
 
 
