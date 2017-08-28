@@ -19,7 +19,11 @@ class Person
         bool update(cv::Rect otherBox);
         void display(cv::Mat &im);
 
+        void reset(){foundThisTurn = false;}
+        void setFound(){foundThisTurn = true;}
+
         bool getRemove(){return remove;}
+        bool getFoundThisTurn(){return foundThisTurn;}
     protected:
         cv::Rect mainBox;
         std::vector<cv::Rect> boxes;
@@ -27,9 +31,9 @@ class Person
         bool disp;
         bool red;
 
+        bool foundThisTurn;
+
         int displayTimer;
         int displayMaxTimer;
-
-        void calcBoxes();
     private:
 };

@@ -5,12 +5,13 @@ Person::Person(cv::Rect _box)
     disp = true;
     remove = false;
     red = false;
+    foundThisTurn = true;
 
     displayTimer = 0;
     displayMaxTimer = 4;
 
-    mainBox = _box
-    calcBoxes();
+    mainBox = _box;
+
 }
 
 Person::~Person()
@@ -25,50 +26,32 @@ bool Person::update(cv::Rect otherBox)
     if((mainBox & otherBox).area() > 50)
     {
         mainBox = otherBox;
-        calcBoxes();
         same = true;
     }
 
 
     displayTimer ++;
-    if(displayTimer > displayTimrerMax) disp = false;
+    if(displayTimer > displayMaxTimer) disp = false;
 
     return same;
 }
 
 void Person::display(cv::Mat &im)
 {
-    bool tmpRed = red;
     if(disp)
     {
-        for(int i = 0; i < boxes.size(); i ++)
+
+        cv::line(im, cv::Point(mainBox.x + (mainBox.width/2), 0), cv::Point(mainBox.x + (mainBox.width/2),im.size().height), cvScalar(0, 0, 255));
+        cv::line(im, cv::Point(0, mainBox.y + (mainBox.height/2)), cv::Point(im.size().width, mainBox.y + (mainBox.height/2)), cvScalar(0, 0, 255));
+        if(red)
         {
-
-            if(tmpRed)
-            {
-                cv::rectangle(im, boxes[i], cv::Scalar(0, 0, 255) );
-            }
-            else
-            {
-                cv::rectangle(im, boxes[i], cv::Scalar(50, 50, 255) );
-
-            }
-            tmpRed = !tmpRed;
+            cv::rectangle(im, mainBox, cv::Scalar(0, 0, 255) );
         }
-    }
-}
+        else
+        {
+            cv::rectangle(im, mainBox, cv::Scalar(100, 100, 255) );
 
-void Person::calcBoxes()
-{
-    boxes.clear();
-    int inc = 3;
-    cv::Rect tmpBox = cv::Rect(mainBox.x, mainBox.y, mainBox.width, mainBox.height);
-    while(tmpBox. width > 0 && tmpBox.height > 0)
-    {
-        tmpBox.x += inc;
-        tmpBox.y += inc;
-        tmpBox.width -= (inc * 2);
-        tmpBox.height -= (inc * 2);
-        boxes.push_back(tmpBox);
+        }
+
     }
 }

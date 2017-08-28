@@ -42,7 +42,7 @@ cv::CascadeClassifier cascade;
 cv::Ptr<cv::BackgroundSubtractor> sub;
 
 // My objects
-//People ppl;
+People ppl;
 //TextControl textControl;
 
 // Video
@@ -115,6 +115,41 @@ int main()
 		// Find faces
 		cascade.detectMultiScale(frameGrey, faces, 1.1);
 
+		// reset pp
+		for(PeopleItr it = ppl.begin(); it != ppl.end(); it ++)
+		{
+            it->reset();
+		}
+
+
+        for(FacesItr it = faces.begin(); it != faces.end(); it ++)
+        {
+            bool found = false;
+            for(PeopleItr it2 = ppl.begin(); it2 != ppl.end(); it2 ++)
+            {
+                found = it2->update(*it);
+                if(found)
+                {
+                    it2->setFound();
+                    break;
+                }
+            }
+
+            if(!found)
+            {
+                ppl.push_back(Person(*it));
+            }
+        }
+
+		for(int i = ppl.size() -1; i >= 0; i --)
+		{
+            if(!ppl[i].getFoundThisTurn())
+            {
+                ppl.erase(ppl.begin() + i);
+            }
+		}
+
+
 		for (int i = contours.size() - 1; i >= 0; i--)
 		{
 			bool remove = true;
@@ -148,6 +183,11 @@ int main()
 		frame.copyTo(extFrame, contourIm);
 
 		cv::bitwise_or(extFrame, extBackground, frame);
+
+		for(PeopleItr it = ppl.begin(); it != ppl.end(); it ++)
+		{
+            it->display(frame);
+		}
 
 
 		cv::imshow(windowName, frame);
