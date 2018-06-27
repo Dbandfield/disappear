@@ -2,7 +2,7 @@
 
 TextControl::TextControl()
 {
-    maxItems = 20;
+    maxItems = 10;
 }
 
 TextControl::~TextControl()
