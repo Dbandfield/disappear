@@ -72,12 +72,6 @@ std::vector<std::string> removingStrings;
 
 int main(int argc, char **argv)
 {
-	if(argc < 1)
-	{
-		std::cout << "Please provide a cascade file as an argument" << std::endl;
-		return 1;
-	}
-
     frameCount = 0;
 	//load cascade
 	cascade.load("./data/cascade.xml");
@@ -99,12 +93,12 @@ int main(int argc, char **argv)
 	{
 		cap >> background;
 	}
-    monitorSz = cv::Size(1920, 1080);
-    combinedSz = cv::Size(monitorSz.height, monitorSz.width);
+    monitorSz = cv::Size(1366, 768);
+    combinedSz = cv::Size(monitorSz.width, monitorSz.height);
 	float a = (float)monitorSz.height/(float)background.size().width;
 	float b = (float)background.size().height * a;
-	camSize = cv::Size(monitorSz.height, b);
-	textSize = cv::Size(monitorSz.height, monitorSz.width - camSize.height);
+	camSize = cv::Size(monitorSz.width/2, monitorSz.height);
+	textSize = cv::Size(monitorSz.width/2, monitorSz.height);
 	combined = cv::Mat(combinedSz, background.type());
 
     bool cont = true;
@@ -118,7 +112,7 @@ int main(int argc, char **argv)
     {
         while(std::getline(file, line))
         {
-            std::cout << " Reading: " << line << std::endl;
+//            std::cout << " Reading: " << line << std::endl;
             waitingStrings.push_back(line);
         }
         file.close();
@@ -135,7 +129,7 @@ int main(int argc, char **argv)
     {
         while(std::getline(file, line))
         {
-                    std::cout << " Reading: " << line << std::endl;
+//                    std::cout << " Reading: " << line << std::endl;
 
             foundStrings.push_back(line);
         }
@@ -153,7 +147,7 @@ int main(int argc, char **argv)
     {
         while(std::getline(file, line))
         {
-                    std::cout << " Reading: " << line << std::endl;
+//                    std::cout << " Reading: " << line << std::endl;
 
             removingStrings.push_back(line);
         }
@@ -172,7 +166,7 @@ int main(int argc, char **argv)
 
             ran = cv::RNG(cv::getTickCount());
             ranNum = ran.uniform(0, waitingStrings.size());
-            std::cout << ranNum << std::endl;
+//            std::cout << ranNum << std::endl;
             textControl.addItem(waitingStrings[ranNum], cv::Scalar(255, 255, 255));
         }
 
@@ -229,7 +223,7 @@ int main(int argc, char **argv)
 
             ran = cv::RNG(cv::getTickCount());
             ranNum = ran.uniform(0, foundStrings.size());
-            std::cout << ranNum << std::endl;
+//            std::cout << ranNum << std::endl;
             textControl.addItem(foundStrings[ranNum], cv::Scalar(0, 0, 255));
 
 
@@ -297,11 +291,11 @@ int main(int argc, char **argv)
 		textControl.display(textIm);
 				cv::resize(frame, frame, camSize);
 
-		std::cout << "Text: " << textIm.size() << " " << textIm.type() << std::endl;
-		std::cout << "Frame: " <<frame.size() << " " << frame.type() << std::endl;
-		std::cout << "Combined: " << combined.size() << " " << combined.type() << std::endl;
-				cv::vconcat(frame, textIm, combined);
-		cv::rotate(combined, combined, cv::ROTATE_90_CLOCKWISE);
+//		std::cout << "Text: " << textIm.size() << " " << textIm.type() << std::endl;
+//		std::cout << "Frame: " <<frame.size() << " " << frame.type() << std::endl;
+//		std::cout << "Combined: " << combined.size() << " " << combined.type() << std::endl;
+		cv::hconcat(frame, textIm, combined);
+//		cv::rotate(combined, combined, cv::ROTATE_90_CLOCKWISE);
 
 		cv::imshow(windowName, combined);
 		char key = cv::waitKey(10);
