@@ -8,7 +8,7 @@ It does this by:
 - get blob 
 - perform background subtraction on blob
 
-It looks like this:\
+It looks like this:
 
 <p><a href="https://vimeo.com/277366091">Disappear</a></p>
 
@@ -20,8 +20,8 @@ It looks like this:\
 # BUILDING
 
 Make sure the executable ends up one directory above the data folder.
-ie.:
-`./bin/disappear # executable`
+ie.:\
+`./bin/disappear # executable`\
 `./bin/data/* # data files`
 
 # RUNNING

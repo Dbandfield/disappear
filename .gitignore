@@ -3,7 +3,7 @@ bin/
 !data
 
 # IDE detritus
-.cproject/
-.project/
+.cproject
+.project
 .settings/
 /Debug/
