@@ -70,17 +70,17 @@ std::vector<std::string> foundStrings;
 std::vector<std::string> removingStrings;
 
 
-int main()
+int main(int argc, char **argv)
 {
+	if(argc < 1)
+	{
+		std::cout << "Please provide a cascade file as an argument" << std::endl;
+		return 1;
+	}
 
     frameCount = 0;
 	//load cascade
-	cascade.load("/home/odroid/Documents/disappear/data/cascade.xml");
-
-
-
-
-
+	cascade.load("./data/cascade.xml");
 
 	// Background Sub
 	sub = cv::createBackgroundSubtractorMOG2(500, 16, false);
@@ -113,7 +113,7 @@ int main()
     std::ifstream file;
     std::string line;
     // waiting
-	file.open("/home/odroid/Documents/disappear/data/waiting.txt");
+	file.open("./data/waiting.txt");
     if(file)
     {
         while(std::getline(file, line))
@@ -130,7 +130,7 @@ int main()
 	}
 
 	// found
-    file.open("/home/odroid/Documents/disappear/data/found.txt");
+    file.open("./data/found.txt");
     if(file)
     {
         while(std::getline(file, line))
@@ -148,7 +148,7 @@ int main()
 	}
 
     // removing
-    file.open("/home/odroid/Documents/disappear/data/removing.txt");
+    file.open("./data/removing.txt");
     if(file)
     {
         while(std::getline(file, line))
