@@ -1,1 +1,8 @@
-/Debug/
+# binaries
+bin/
+!data
+
+# IDE detritus
+.cproject/
+.project/
+.settings/
